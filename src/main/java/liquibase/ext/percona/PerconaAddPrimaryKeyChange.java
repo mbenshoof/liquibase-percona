@@ -44,6 +44,12 @@ public class PerconaAddPrimaryKeyChange extends AddPrimaryKeyChange implements P
     public String generateAlterStatement(Database database) {
         StringBuilder alter = new StringBuilder();
 
+        if (StringUtil.isNotEmpty(getConstraintName())) {
+            if (StringUtils.trimToEmpty(getConstraintName()).equals("drop_pk")) {
+                alter.append("DROP PRIMARY KEY, ");
+            } 
+        }
+
         alter.append("ADD PRIMARY KEY (");
         List<String> columns = StringUtils.splitAndTrim(getColumnNames(), ",");
         if (columns == null) columns = Collections.emptyList();
