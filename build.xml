@@ -1,0 +1,25 @@
+<project>
+
+
+    <property name="lib.dir"     value="/liquibase"/>
+
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </path>
+
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="build/classes"/>
+        <javac srcdir="src/main/java/liquibase/ext/percona/" destdir="build/classes" classpathref="classpath" />
+    </target>
+
+    <target name="jar">
+        <mkdir dir="build/jar"/>
+        <jar destfile="/liquibase/lib/liquibase-percona-1.4.2.jar" basedir="build/classes">
+        </jar>
+    </target>
+
+</project>
