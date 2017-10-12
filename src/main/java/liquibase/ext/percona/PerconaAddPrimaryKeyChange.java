@@ -9,6 +9,8 @@ import liquibase.change.DatabaseChange;
 import liquibase.change.core.AddPrimaryKeyChange;
 import liquibase.database.Database;
 import liquibase.statement.SqlStatement;
+import liquibase.logging.LogFactory;
+import liquibase.logging.Logger;
 import liquibase.util.StringUtils;
 
 /**
@@ -21,6 +23,11 @@ import liquibase.util.StringUtils;
 public class PerconaAddPrimaryKeyChange extends AddPrimaryKeyChange implements PerconaChange {
     public static final String NAME = "addPrimaryKey";
     public static final int PRIORITY = ChangeMetaData.PRIORITY_DEFAULT + 50;
+    private static Logger log = LogFactory.getInstance().getLog();
+
+    // Ensure we only set any AddPK options once.
+    private static Boolean optsSet = false;
+
 
     private Boolean usePercona;
 
@@ -42,6 +49,24 @@ public class PerconaAddPrimaryKeyChange extends AddPrimaryKeyChange implements P
 
     @Override
     public String generateAlterStatement(Database database) {
+       
+        // Add any specific safety options automatically to pt-osc for PK related changes (only once).
+        if (optsSet == false) {
+
+            StringBuilder extraProps = new StringBuilder();
+
+            if (StringUtil.isNotEmpty(System.getProperty(Configuration.ADDITIONAL_OPTIONS))) { 
+                extraProps.append(StringUtils.trimToEmpty(System.getProperty(Configuration.ADDITIONAL_OPTIONS)));
+                extraProps.append(" --no-check-unique-key-change --no-check-alter");
+            } else {
+                extraProps.append("--no-check-unique-key-change --no-check-alter");
+            }
+
+            System.setProperty(Configuration.ADDITIONAL_OPTIONS, extraProps.toString());
+            log.info("Added --no-check-unique-key-change --no-check-alter options to pt-osc");
+            optsSet = true;
+        }
+
         StringBuilder alter = new StringBuilder();
 
         if (StringUtil.isNotEmpty(getConstraintName())) {
