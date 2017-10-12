@@ -50,7 +50,7 @@ public class PerconaDropPrimaryKeyChange extends DropPrimaryKeyChange implements
     }
 
     public void setUsePercona(Boolean usePercona) {
-        this.usePercona = usePercona;
+        this.usePercona = false;
     }
 
     @Override

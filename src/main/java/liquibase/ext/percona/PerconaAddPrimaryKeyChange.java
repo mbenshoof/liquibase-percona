@@ -65,7 +65,6 @@ public class PerconaAddPrimaryKeyChange extends AddPrimaryKeyChange implements P
         PerconaDropPrimaryKeyChange inverse = new PerconaDropPrimaryKeyChange();
         inverse.setSchemaName(getSchemaName());
         inverse.setTableName(getTableName());
-        inverse.setConstraintName(getConstraintName());
 
         return new Change[] { inverse };
     }
