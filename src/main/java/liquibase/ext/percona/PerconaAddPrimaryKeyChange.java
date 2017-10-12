@@ -14,7 +14,7 @@ import liquibase.logging.Logger;
 import liquibase.util.StringUtils;
 
 /**
- * Subclasses the original {@link liquibase.change.core.AddUniqueConstraintChange} to
+ * Subclasses the original {@link liquibase.change.core.AddPrimaryKeyChange} to
  * integrate with pt-online-schema-change.
  * @see PTOnlineSchemaChangeStatement
  */
@@ -32,7 +32,7 @@ public class PerconaAddPrimaryKeyChange extends AddPrimaryKeyChange implements P
     private Boolean usePercona;
 
     /**
-     * Generates the statements required for the add unique constraint change.
+     * Generates the statements required for the add PK change change.
      * In case of a MySQL database, percona toolkit will be used.
      * In case of generating the SQL statements for review (updateSQL) the command
      * will be added as a comment.
@@ -69,6 +69,8 @@ public class PerconaAddPrimaryKeyChange extends AddPrimaryKeyChange implements P
 
         StringBuilder alter = new StringBuilder();
 
+        // If there is an existing PK, there needs to be "drop_pk" added as a constraint.
+        // This is needed because pt-osc won't allow a DROP without an ADD of PK.
         if (StringUtil.isNotEmpty(getConstraintName())) {
             if (StringUtils.trimToEmpty(getConstraintName()).equals("drop_pk")) {
                 alter.append("DROP PRIMARY KEY, ");
@@ -86,7 +88,7 @@ public class PerconaAddPrimaryKeyChange extends AddPrimaryKeyChange implements P
 
     @Override
     protected Change[] createInverses() {
-        // that's the percona drop unique constraint change
+        // that's the percona drop primary key change
         PerconaDropPrimaryKeyChange inverse = new PerconaDropPrimaryKeyChange();
         inverse.setSchemaName(getSchemaName());
         inverse.setTableName(getTableName());

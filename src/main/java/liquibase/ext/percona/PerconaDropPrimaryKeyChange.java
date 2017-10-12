@@ -7,12 +7,12 @@ import liquibase.database.Database;
 import liquibase.statement.SqlStatement;
 
 /**
- * Subclasses the original {@link liquibase.change.core.DropUniqueConstraintChange} to
+ * Subclasses the original {@link liquibase.change.core.DropPrimaryKeyChange} to
  * integrate with pt-online-schema-change.
  * @see PTOnlineSchemaChangeStatement
  */
 @DatabaseChange(name = PerconaDropPrimaryKeyChange.NAME, description = "Drops an existing primary key",
-    priority = PerconaDropPrimaryKeyChange.PRIORITY, appliesTo = "uniqueConstraint")
+    priority = PerconaDropPrimaryKeyChange.PRIORITY, appliesTo = "primaryKey")
 public class PerconaDropPrimaryKeyChange extends DropPrimaryKeyChange implements PerconaChange {
     public static final String NAME = "dropPrimaryKey";
     public static final int PRIORITY = ChangeMetaData.PRIORITY_DEFAULT + 50;
@@ -20,10 +20,9 @@ public class PerconaDropPrimaryKeyChange extends DropPrimaryKeyChange implements
     private Boolean usePercona;
 
     /**
-     * Generates the statements required for the drop unique constraint change.
-     * In case of a MySQL database, percona toolkit will be used.
-     * In case of generating the SQL statements for review (updateSQL) the command
-     * will be added as a comment.
+     * Generates the statements required for the drop PK change.
+     * This class is a placeholder and usePercona is hardcoded to 
+     * be blocked since pt-osc doesn't support DROP PK.
      * @param database the database
      * @return the list of statements
      * @see PTOnlineSchemaChangeStatement
