@@ -71,10 +71,8 @@ public class PerconaAddPrimaryKeyChange extends AddPrimaryKeyChange implements P
 
         // If there is an existing PK, there needs to be "drop_pk" added as a constraint.
         // This is needed because pt-osc won't allow a DROP without an ADD of PK.
-        if (StringUtil.isNotEmpty(getConstraintName())) {
-            if (StringUtils.trimToEmpty(getConstraintName()).equals("drop_pk")) {
-                alter.append("DROP PRIMARY KEY, ");
-            } 
+        if (StringUtil.isNotEmpty(getConstraintName()) && StringUtils.trimToEmpty(getConstraintName()).equals("drop_pk")) {
+            alter.append("DROP PRIMARY KEY, ");
         }
 
         alter.append("ADD PRIMARY KEY (");
