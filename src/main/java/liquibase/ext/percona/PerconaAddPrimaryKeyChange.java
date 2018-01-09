@@ -36,6 +36,9 @@ public class PerconaAddPrimaryKeyChange extends AddPrimaryKeyChange implements P
 
     private Boolean usePercona;
 
+    // Just a placeholder to note a caught exception
+    private int caughtException = 0;
+
     /**
      * Generates the statements required for the add PK change change.
      * In case of a MySQL database, percona toolkit will be used.
@@ -94,7 +97,7 @@ public class PerconaAddPrimaryKeyChange extends AddPrimaryKeyChange implements P
                 alter.append("DROP PRIMARY KEY, ");
             }
         } catch (Exception e) {
-            boolean noPMD = true;
+            caughtException++;
         }
 
         alter.append("ADD PRIMARY KEY (");
