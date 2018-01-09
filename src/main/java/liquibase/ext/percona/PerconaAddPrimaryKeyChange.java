@@ -7,11 +7,16 @@ import liquibase.change.Change;
 import liquibase.change.ChangeMetaData;
 import liquibase.change.DatabaseChange;
 import liquibase.change.core.AddPrimaryKeyChange;
+import liquibase.change.core.DropPrimaryKeyChange;
 import liquibase.database.Database;
 import liquibase.statement.SqlStatement;
 import liquibase.logging.LogFactory;
 import liquibase.logging.Logger;
 import liquibase.util.StringUtils;
+import liquibase.structure.core.Table;
+import liquibase.structure.core.PrimaryKey;
+import liquibase.structure.core.Schema;
+import liquibase.snapshot.SnapshotGeneratorFactory;
 
 /**
  * Subclasses the original {@link liquibase.change.core.AddPrimaryKeyChange} to
@@ -64,15 +69,32 @@ public class PerconaAddPrimaryKeyChange extends AddPrimaryKeyChange implements P
 
             System.setProperty(Configuration.ADDITIONAL_OPTIONS, extraProps.toString());
             log.info("Added --no-check-unique-key-change --no-check-alter options to pt-osc");
-            optsSet = true;
+            setOpts(true);
         }
 
         StringBuilder alter = new StringBuilder();
 
         // If there is an existing PK, there needs to be "drop_pk" added as a constraint.
         // This is needed because pt-osc won't allow a DROP without an ADD of PK.
-        if (StringUtil.isNotEmpty(getConstraintName()) && StringUtils.trimToEmpty(getConstraintName()).equals("drop_pk")) {
-            alter.append("DROP PRIMARY KEY, ");
+
+        PrimaryKey example = new PrimaryKey();
+        Table table = new Table();
+        table.setSchema(new Schema(getCatalogName(), getSchemaName()));
+        if (StringUtils.trimToNull(getTableName()) != null) {
+            table.setName(getTableName());
+        }
+        example.setTable(table);
+        example.setName("primary");
+
+        try {
+            if (!SnapshotGeneratorFactory.getInstance().has(example, database)) {
+                log.info("Primary Key does not exist on " + database.escapeObjectName(getTableName(), Table.class));
+            } else {
+                log.info("Primary Key does exist on " + database.escapeObjectName(getTableName(), Table.class) + ", so append DROP PK");
+                alter.append("DROP PRIMARY KEY, ");
+            }
+        } catch (Exception e) {
+            // pass
         }
 
         alter.append("ADD PRIMARY KEY (");
@@ -87,7 +109,7 @@ public class PerconaAddPrimaryKeyChange extends AddPrimaryKeyChange implements P
     @Override
     protected Change[] createInverses() {
         // that's the percona drop primary key change
-        PerconaDropPrimaryKeyChange inverse = new PerconaDropPrimaryKeyChange();
+        DropPrimaryKeyChange inverse = new DropPrimaryKeyChange();
         inverse.setSchemaName(getSchemaName());
         inverse.setTableName(getTableName());
 
@@ -111,5 +133,9 @@ public class PerconaAddPrimaryKeyChange extends AddPrimaryKeyChange implements P
     @Override
     public String getTargetTableName() {
         return getTableName();
+    }
+
+    public synchronized static void setOpts(boolean opts) {
+        PerconaAddPrimaryKeyChange.optsSet = opts;
     }
 }
