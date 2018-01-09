@@ -94,7 +94,7 @@ public class PerconaAddPrimaryKeyChange extends AddPrimaryKeyChange implements P
                 alter.append("DROP PRIMARY KEY, ");
             }
         } catch (Exception e) {
-            // pass
+            boolean noPMD = true;
         }
 
         alter.append("ADD PRIMARY KEY (");
